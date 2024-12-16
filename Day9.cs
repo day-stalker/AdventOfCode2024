@@ -14,63 +14,64 @@ namespace AdventOfCode2024
             var file = File.ReadAllLines(_filePath);
             string input = file[0];
 
-            var decodedLine = Decode1(input);
-            var sorted = Sort1(decodedLine);
-            var checkSum = CheckSum(sorted);
-            
-            Console.WriteLine(checkSum);
+            var disk = Decode1(input);
+            Compact1(disk);
+            Console.WriteLine(CheckSum1(disk));
         }
 
-        private static string Decode1(string input)
+        private static List<char> Decode1(string input)
         {
-            var builder = new StringBuilder();
+            var disk = new List<char>();
+            int fileId = 0;
             for (int i = 0; i < input.Length; i++)
             {
+                int length = int.Parse(input[i].ToString());
                 if (i % 2 == 0)
                 {
-                    builder.Append(new string(input[i], int.Parse(input[i].ToString())));
+                    disk.AddRange(new string((char)('0' + fileId), length));
+                    fileId++;
                 }
                 else
                 {
-                    builder.Append(new string('.', int.Parse(input[i].ToString())));
+                    disk.AddRange(new string('.', length));
                 }
             }
-            return builder.ToString();
+            return disk;
         }
 
-        private static string Sort1(string line)
+        private static void Compact1(List<char> disk)
         {
-            char[] charArray = line.ToCharArray();
-            var right_i = charArray.Length - 1;
-            for (var l = 0; l <  right_i; l++)
+            while (true)
             {
-                if (l < right_i && charArray[l] == '.' && charArray[right_i] != '.')
+                int leftmostFree = disk.IndexOf('.');
+                int rightmostFile = -1;
+                for (int i = disk.Count - 1; i >= 0; i--)
                 {
-                    char tmp = charArray[l];
-                    charArray[l] = charArray[right_i];
-                    charArray[right_i] = tmp;
-                    right_i--;
+                    if (disk[i] != '.')
+                    {
+                        rightmostFile = i;
+                        break;
+                    }
                 }
 
-                if (l < right_i && charArray[l] == '.' && charArray[right_i] == '.')
-                {
-                    right_i--;
-                }
+                if (leftmostFree == -1 || rightmostFile == -1 || leftmostFree > rightmostFile) break;
+
+                disk[leftmostFree] = disk[rightmostFile];
+                disk[rightmostFile] = '.';
             }
-            return new string(charArray);
         }
-        private static long CheckSum(string line)
+
+        private static long CheckSum1(List<char> disk)
         {
             long result = 0;
-            for (var i = 0; i < line.Length; i++)
+            for (int i = 0; i < disk.Count; i++)
             {
-                if (line[i] != '.')
+                if (disk[i] != '.')
                 {
-                    result += long.Parse(line[i].ToString()) * i;
+                    result += (disk[i] - '0') * i;
                 }
             }
-
             return result;
-        } 
+        }
     }
 }
